@@ -15,7 +15,7 @@ tensorflow-hub==0.13.0  # Module pour Universal Sentence Encoder (USE)
 transformers==4.28.1  # Pour BertTokenizer
 
 # Manipulation des données
-numpy==1.23.5
+numpy==1.24.4
 pandas==1.5.3
 scikit-learn==1.2.2  # Pour encodage des labels et métriques
 
