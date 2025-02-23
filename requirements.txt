@@ -1,6 +1,6 @@
-pip
-setuptools
-wheel
+pip==25.0.1
+setuptools==65.5.0
+wheel==0.45.1
 
 
 # FastAPI & Serveur ASGI# FastAPI & Serveur ASGI

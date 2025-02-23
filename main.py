@@ -11,6 +11,7 @@ import tensorflow_hub as hub
 from transformers import BertTokenizer
 import nest_asyncio
 import os
+import tempfile
 
 # Application du patch pour éviter les conflits asyncio
 nest_asyncio.apply()
@@ -67,17 +68,43 @@ def predict_text(request: TextRequest):
         raise HTTPException(status_code = 500, detail = f"Erreur interne : {str(e)}")
 
 # Endpoint pour la prédiction de l'image
+
+# @app.post("/predict_image")
+# def predict_image(file: UploadFile = File(...)):
+#     try:
+#         image_bytes = file.file.read()
+#         img_array = preprocess_image(image_bytes)
+#         prediction = image_model.predict(img_array)
+#         predicted_label = label_encoder.inverse_transform([np.argmax(prediction)])[0]
+#         confidence = float(np.max(prediction))
+#         return {"category": predicted_label, "confidence": confidence}
+#     except Exception as e:
+#         raise HTTPException(status_code = 500, detail = f"Erreur interne : {str(e)}")
+
 @app.post("/predict_image")
 def predict_image(file: UploadFile = File(...)):
     try:
-        image_bytes = file.file.read()
-        img_array = preprocess_image(image_bytes)
+        # Stockage temporaire de l'image
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(file.file.read())
+            temp_file_path = temp_file.name  # Chemin du fichier temporaire
+
+        # Chargement et prétraitement de l'image
+        img = Image.open(temp_file_path)
+        img = img.convert("RGB").resize((224, 224))
+        img_array = np.array(img) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
+
+        # Prédiction
         prediction = image_model.predict(img_array)
         predicted_label = label_encoder.inverse_transform([np.argmax(prediction)])[0]
         confidence = float(np.max(prediction))
+
+        os.remove(temp_file_path)  # Nettoyage du fichier temporaire
+
         return {"category": predicted_label, "confidence": confidence}
     except Exception as e:
-        raise HTTPException(status_code = 500, detail = f"Erreur interne : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur interne : {str(e)}")
 
 # Endpoint pour extraire un embedding de description
 @app.post("/extract_embedding")
@@ -87,6 +114,22 @@ def extract_embedding(request: TextRequest):
         return {"embedding": embedding.tolist()}
     except Exception as e:
         raise HTTPException(status_code = 500, detail = f"Erreur interne : {str(e)}")
+
+@app.get("/test_models")
+def test_models():
+    try:
+        # Test rapide sur le modèle texte
+        dummy_text = "This is a test product description."
+        dummy_embedding = encode_with_use(dummy_text).reshape(1, -1)
+        text_prediction = text_model.predict(dummy_embedding)
+
+        # Test rapide sur le modèle image avec une image factice
+        dummy_image = np.random.rand(1, 224, 224, 3)  # Image aléatoire de dimensions correctes
+        image_prediction = image_model.predict(dummy_image)
+
+        return {"text_model_status": "OK", "image_model_status": "OK"}
+    except Exception as e:
+        return {"error": str(e)}
 
 # Endpoint de santé pour vérifier si l'API fonctionne
 @app.get("/health")
