@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+tensorflow
+tensorflow-hub
+pillow
+numpy
+pydantic
+pickle5
+transformers
+nest_asyncio
+pickle-mixin
+opencv-python
