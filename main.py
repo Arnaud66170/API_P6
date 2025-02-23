@@ -58,13 +58,13 @@ def preprocess_image(image_bytes):
 def predict_text(request: TextRequest):
     try:
         embedding = encode_with_use(request.description)
-        embedding = np.expand_dims(embedding, axis=0)
+        embedding = np.expand_dims(embedding, axis = 0)
         prediction = text_model.predict(embedding)
         predicted_label = label_encoder.inverse_transform([np.argmax(prediction)])[0]
         confidence = float(np.max(prediction))
         return {"category": predicted_label, "confidence": confidence}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur interne : {str(e)}")
+        raise HTTPException(status_code = 500, detail = f"Erreur interne : {str(e)}")
 
 # Endpoint pour la prédiction de l'image
 @app.post("/predict_image")
@@ -77,7 +77,7 @@ def predict_image(file: UploadFile = File(...)):
         confidence = float(np.max(prediction))
         return {"category": predicted_label, "confidence": confidence}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur interne : {str(e)}")
+        raise HTTPException(status_code = 500, detail = f"Erreur interne : {str(e)}")
 
 # Endpoint pour extraire un embedding de description
 @app.post("/extract_embedding")
@@ -86,7 +86,7 @@ def extract_embedding(request: TextRequest):
         embedding = encode_with_use(request.description)
         return {"embedding": embedding.tolist()}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur interne : {str(e)}")
+        raise HTTPException(status_code = 500, detail = f"Erreur interne : {str(e)}")
 
 # Endpoint de santé pour vérifier si l'API fonctionne
 @app.get("/health")
@@ -98,6 +98,6 @@ def health_check():
 def root():
     return {"message": "Bienvenue dans l'API de classification"}
 
-# Exécution de l'API (lancement avec `uvicorn projet_api.main:app --reload`)
+# Exécution de l'API (lancement avec `uvicorn API_P6.main:app --reload`)
 if __name__ == "__main__":
-    uvicorn.run("projet_api.main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("API.P6_api.main:app", host = "0.0.0.0", port = 8000, reload = True)
